@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+
+<robot name="axes.urdf">
+
+  <link name="baselink"></link>
+
+  <link name="z">
+
+    <visual>
+      <origin xyz="0 0 .05"/>
+      <geometry>
+        <box size=".01 .01 .1"/>
+      </geometry>
+      <material name="blue">
+        <color rgba="0 0 .8 1"/>
+      </material>
+    </visual>
+
+  </link>
+
+  <link name="y">
+
+    <visual>
+      <origin xyz="0 .05 0"/>
+      <geometry>
+        <box size=".01 .1 .01"/>
+      </geometry>
+      <material name="green">
+        <color rgba="0 1 0 1"/>
+      </material>
+    </visual>
+
+  </link>
+
+  <link name="x">
+
+    <visual>
+      <origin xyz=".05 0 0"/>
+      <geometry>
+        <box size=".1 .01 0.01"/>
+      </geometry>
+      <material name="red">
+        <color rgba="1 0 0 1"/>
+      </material>
+    </visual>
+
+  </link>
+
+  <joint name="xjoint" type="fixed">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="baselink"/>
+    <child link="x"/>
+  </joint>
+  <joint name="yjoint" type="fixed">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="baselink"/>
+    <child link="y"/>
+  </joint>
+  <joint name="zjoint" type="fixed">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="baselink"/>
+    <child link="z"/>
+  </joint>
+
+  <link name="world"/>
+  <joint name="world_joint" type="fixed">
+    <parent link="world"/>
+    <child link="baselink"/>
+    <origin rpy="0.0 0.0 0" xyz="0.0 0.0 0.0"/>
+  </joint>
+
+</robot>

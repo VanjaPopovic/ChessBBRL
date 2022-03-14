@@ -1,0 +1,8 @@
+*.pyc
+*.egg-info
+*.npz
+*.zip
+*.pkl
+logs
+tmp
+.python-version
