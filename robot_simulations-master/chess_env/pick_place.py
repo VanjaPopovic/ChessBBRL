@@ -43,6 +43,9 @@ class PickPlaceScene(scene.Scene):
         if os.name == 'nt':
             self.stockfish = Stockfish(
                 r'C:\Users\fream\Downloads\robot_simulations-master\robot_simulations-master\chess_env\stockfish2.exe')
+        else:
+            self.stockfish = Stockfish(os.path.abspath(
+                "/home/pitsill0s/Desktop/ChessBBRL/robot_simulations-master/chess_env/stockfish_14.1_linux_x64"))
         self.start_fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
 
     # Scene extension methods
@@ -321,9 +324,26 @@ class PickPlaceScene(scene.Scene):
 
         if self.isTraining:
             self.randomize_with_fen(self.current_fen_string)
+        else:
+            self.stockfish.set_fen_position(self.current_fen_string)
+            board = chess.Board(self.current_fen_string)
+            move = self.stockfish.get_best_move()
+            chessMove = chess.Move.from_uci(move)
+            board.push(chessMove)
+            self.stockfish.set_fen_position(board.fen())
+            self.current_fen_string = self._simplify_fen(board.fen())
+            self.randomize_with_fen(self.current_fen_string)
         self.objects = self.posDict
         return self.posDict
 
+    def _simplify_fen(myline):
+        a, b = myline.split(' ', 1)
+        d = {"2": "11", "3": "111", "4": "1111", "5": "11111",
+             "6": "111111", "7": "1111111", "8": "11111111"}
+        for x, y in d.items():
+            a = a.replace(x, y)
+        newString = a + " " + b
+        return newString
     # Helper functions
 
     def getNumFingerTipContacts(self, robot_index, block_name):

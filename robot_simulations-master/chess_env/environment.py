@@ -64,6 +64,9 @@ class PickAndPlace(gym.Env):
         if os.name == 'nt':
             self.stockfish = Stockfish(
                 r'C:\Users\fream\Downloads\robot_simulations-master\robot_simulations-master\chess_env\stockfish2.exe')
+        else:
+            self.stockfish = Stockfish(os.path.abspath(
+                "/home/pitsill0s/Desktop/ChessBBRL/robot_simulations-master/chess_env/stockfish_14.1_linux_x64"))
         self.action_space = self._setup_action_space(self._get_num_actions())
 
         self.metadata = {"render.modes": ["human", "rgbd_array"]}
