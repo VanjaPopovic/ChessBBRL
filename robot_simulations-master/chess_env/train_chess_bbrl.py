@@ -198,8 +198,7 @@ if __name__ == "__main__":
             action_out = 1
 
         object_rel_pos_arm = obs[26:29].copy()
-        object_rel_pos_arm[2] += 0.02
-        while np.linalg.norm(object_rel_pos_arm) > 0.01 and timestep <= env.max_steps:
+        while np.linalg.norm(object_rel_pos_arm) > 0.03 and timestep <= env.max_steps:
             model_input = torch.from_numpy(obs).type(
                 torch.FloatTensor).to(device)
             behaviour_net(model_input)

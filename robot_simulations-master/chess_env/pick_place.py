@@ -312,7 +312,7 @@ class PickPlaceScene(scene.Scene):
             self.chessboard[0], [0.6, 0.0, 0.627], chessboardOrn
         )
         isCheckMate = True
-        while isCheckMate:
+        while isCheckMate and self.isTraining:
             self.current_fen_string = self._randomizePositionFromFen()
             self.stockfish.set_fen_position(self.current_fen_string)
             fen = self.stockfish.get_fen_position()
@@ -325,10 +325,9 @@ class PickPlaceScene(scene.Scene):
         if self.isTraining:
             self.randomize_with_fen(self.current_fen_string)
         else:
-            self.stockfish.set_fen_position(self.current_fen_string)
-            board = chess.Board(self.current_fen_string)
             move = self.stockfish.get_best_move()
             chessMove = chess.Move.from_uci(move)
+            board = chess.Board(self.stockfish.get_fen_position())
             board.push(chessMove)
             self.stockfish.set_fen_position(board.fen())
             self.current_fen_string = self._simplify_fen(board.fen())
@@ -336,7 +335,7 @@ class PickPlaceScene(scene.Scene):
         self.objects = self.posDict
         return self.posDict
 
-    def _simplify_fen(myline):
+    def _simplify_fen(self, myline):
         a, b = myline.split(' ', 1)
         d = {"2": "11", "3": "111", "4": "1111", "5": "11111",
              "6": "111111", "7": "1111111", "8": "11111111"}

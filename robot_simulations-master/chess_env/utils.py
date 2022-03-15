@@ -121,7 +121,6 @@ def step_fn_trained_rn(env, action):
 
 
 def step_fn_expert_behaviours(env, action):
-
     if action == 0 and not env.has_approached:
         robPos, robOrn = env.robot.getPose()
         goalOrn = env.robot.restOrn
@@ -250,6 +249,12 @@ def step_fn_expert_behaviours(env, action):
     env.grasped()
     env.retracted()
     env.placed()
+    if env.has_approached:
+        env._current_behaviour = "grasp"
+    if env.has_grasped:
+        env._current_behaviour = "retract"
+    if env.has_retracted:
+        env._current_behaviour = "place"
     return env._get_obs(), env._get_reward(), env._is_done(), env._get_info()
 
 
