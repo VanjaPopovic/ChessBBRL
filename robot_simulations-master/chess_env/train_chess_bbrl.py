@@ -271,7 +271,6 @@ if __name__ == "__main__":
         tar = obs[32:35].copy()
         tar[2] = 0.7
         object_rel_pos_target = tar - obs[0:3]
-        # print(obs)
         while np.linalg.norm(object_rel_pos_target) > 0.03 and timestep <= env.max_steps:
             model_input = torch.from_numpy(obs).type(
                 torch.FloatTensor).to(device)
@@ -337,11 +336,15 @@ if __name__ == "__main__":
             action_out = 3
 
         # replace this with Final action?
-        final_target = obs[29:32].copy()
-        final_target[2] = 0.64
-        final_target = final_target - obs[13:16]
-        
-        while np.linalg.norm(final_target) > 0.02 and timestep <= env.max_steps:
+
+
+        tar = obs[32:35].copy()
+        tar[2] += 0.02
+        object_rel_pos_target = tar - obs[0:3]
+        # final_target = obs[29:32].copy()
+        # final_target[2] = 0.64
+        # final_target = final_target - obs[13:16]
+        while np.linalg.norm(object_rel_pos_target) > 0.02 and timestep <= env.max_steps:
             model_input = torch.from_numpy(obs).type(
                 torch.FloatTensor).to(device)
             behaviour_net(model_input)
@@ -368,9 +371,12 @@ if __name__ == "__main__":
                 else:
                     action = expected_np
             obs, reward, done, info = env.step(action)
-            final_target = obs[29:32].copy()
-            final_target[2] = 0.64
-            final_target = final_target - obs[13:16]
+            tar = obs[32:35].copy()
+            tar[2] += 0.02
+            object_rel_pos_target = tar - obs[0:3]
+            # final_target = obs[29:32].copy()
+            # final_target[2] = 0.64
+            # final_target = final_target - obs[13:16]
             timestep += 1
 
         obs = env._get_obs()

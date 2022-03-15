@@ -157,14 +157,9 @@ class PickAndPlace(gym.Env):
         Checks whether retract is successful and set corresponding variable
         """
         if not self.has_retracted:
-            # robot_pos, _ = self.robot.getPose()
             block_pos = self.robot.getGripperObs().copy()[:3]
             target_pos = self.scene.getDestTarget().copy()
-
             target_pos[2] = 0.7
-            #target_pos = self.obs[29:32]
-            # # Target for approach is 5cm above object
-            # block_pos[2] += 0.05
             self.has_retracted = (
                 np.linalg.norm(
                     target_pos - block_pos) <= self._approach_dist_threshold
@@ -185,21 +180,12 @@ class PickAndPlace(gym.Env):
         """
         if not self.has_placed:
             block_pos, _ = self.scene.getPose(self._goal_object)
-            robot_pos, _ = self.robot.getPose()
-            # final_target = self.obs[29:32].copy()
             final_target = self.scene.getDestTarget()
-            # hand_is_in_place = (
-            #     self._get_dist(robot_pos, final_target) <= self._place_dist_threshold
-            # )
-            # final_target[2] = 0.67
             block_is_in_place = (
                 self._get_dist(
                     block_pos, final_target) <= self._place_dist_threshold
             )
-            # if hand_is_in_place:
-            #print("PLACED FUNCTION",final_target, block_is_in_place)
             self.has_placed = block_is_in_place
-            # print(self.has_placed)
 
     def _get_obs(self):
         """Returns the observation from the environment"""
