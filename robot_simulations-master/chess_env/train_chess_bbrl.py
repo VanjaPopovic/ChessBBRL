@@ -37,7 +37,7 @@ if __name__ == "__main__":
                         help="Value loss coefficient")
     parser.add_argument('--epsilon', type=float, default=0.2,
                         help='parameter for Clipped Surrogate Objective')
-    parser.add_argument("--weights-path", help="Path to weights folder")
+    parser.add_argument("--weights-path", help="Path to weights folder", default="./")
     parser.add_argument("--seed", help="RNG seed")
     args = parser.parse_args()
 
@@ -57,8 +57,10 @@ if __name__ == "__main__":
         stockfish = Stockfish(
             r'C:\Users\fream\Downloads\robot_simulations-master\robot_simulations-master\chess_env\stockfish2.exe')
     else:
-        stockfish = Stockfish(os.path.abspath(
-            "/home/pitsill0s/Downloads/robot_simulations-master/chess_env/stockfish_14.1_linux_x64"))
+        stockfish = Stockfish(
+            os.path.abspath("/home/pitsill0s/Desktop/ChessBBRL/robot_simulations-master/chess_env/stockfish_14.1_linux_x64")
+        )
+            
     scene = PickPlaceScene(guiMode=True, isTraining=True)
     robot = scene.loadRobot()
     env = PickAndPlace(scene, robot, step_fn=step_fn_low_level_behaviours)

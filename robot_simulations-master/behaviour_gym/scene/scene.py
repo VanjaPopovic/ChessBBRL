@@ -249,7 +249,6 @@ class Scene:
             world orientation as quaternion [x,y,z,w].
 
         """
-        print("NAME IN HEREEEEEEEEEEEEEEEEEEE", name)
         modelId = self.objects[name].model[0]
         linkId = -1
 
