@@ -229,6 +229,7 @@ if __name__ == "__main__":
                     action = expected_np
             obs, reward, done, info = env.step(action)
             object_rel_pos_arm = obs[26:29].copy()
+            object_rel_pos_arm[2] += 0.02
             timestep += 1
 
         while not env.has_grasped and timestep < env.max_steps:
@@ -297,7 +298,6 @@ if __name__ == "__main__":
                     [expected[0].item(), expected[1].item(), expected[2].item(), 0, -1])
             obs, reward, done, info = env.step(action)
             tar = obs[32:35].copy()
-            #print("GETTING TAR",tar)
             tar[2] = 0.7
             object_rel_pos_target = tar - obs[0:3]
             timestep += 1
@@ -341,16 +341,13 @@ if __name__ == "__main__":
         tar = obs[32:35].copy()
         tar[2] += 0.02
         object_rel_pos_target = tar - obs[0:3]
-        # final_target = obs[29:32].copy()
-        # final_target[2] = 0.64
-        # final_target = final_target - obs[13:16]
         while np.linalg.norm(object_rel_pos_target) > 0.02 and timestep <= env.max_steps:
             model_input = torch.from_numpy(obs).type(
                 torch.FloatTensor).to(device)
             behaviour_net(model_input)
             behaviour_action = behaviour_net.get_behaviour_output(action_out)
             expected_np = np.array(
-                [final_target[0], final_target[1], final_target[2], 0, -1])
+                [object_rel_pos_target[0], object_rel_pos_target[1], object_rel_pos_target[2], 0, -1])
             expected = torch.from_numpy(expected_np).type(torch.FloatTensor)
 
             if args.command == "place":
@@ -374,9 +371,6 @@ if __name__ == "__main__":
             tar = obs[32:35].copy()
             tar[2] += 0.02
             object_rel_pos_target = tar - obs[0:3]
-            # final_target = obs[29:32].copy()
-            # final_target[2] = 0.64
-            # final_target = final_target - obs[13:16]
             timestep += 1
 
         obs = env._get_obs()
