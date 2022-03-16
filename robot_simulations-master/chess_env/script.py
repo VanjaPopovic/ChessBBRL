@@ -1,17 +1,20 @@
 import math
 import time
-import random
 import numpy as np
 import os
 import cv2
 from stockfish import Stockfish
 import chess
 from Chessnut import Game
+import random
+
+
 class ChessSquare:
     def __init__(self, pos, model, name):
-        self.name = name 
+        self.name = name
         self.pos = pos
         self.model = model
+
 
 if __name__ == "__main__":
 
@@ -24,9 +27,10 @@ if __name__ == "__main__":
     else:
         stockfish = Stockfish(os.path.abspath(
             "/home/pitsill0s/Desktop/ChessBBRL/robot_simulations-master/chess_env/stockfish_14.1_linux_x64"))
-    scene = PickPlaceScene(False, guiMode=True)
+    scene = PickPlaceScene(isTraining=False, guiMode=True)
     robot = scene.loadRobot()
-    env = PickAndPlace(scene, robot, step_fn_expert_behaviours)
+    env = PickAndPlace(
+        scene, robot, step_fn_expert_behaviours, isTraining=False)
 
     view_matrix = env.p.computeViewMatrixFromYawPitchRoll(
         cameraTargetPosition=[0, 0, 0],
@@ -50,27 +54,43 @@ if __name__ == "__main__":
 
         move = stockfish.get_best_move()
         chessMove = chess.Move.from_uci(move)
-        env.reset()
+
         # im_rgb = cv2.cvtColor(rgbImg, cv2.COLOR_BGR2RGB)
         # img = cv2.imshow("Image",im_rgb)
         # cv2.imwrite("file.jpg",im_rgb)
         # cv2.waitKey()
         done = False
         while not (board.is_checkmate() or board.is_stalemate() or board.is_insufficient_material()):
-            if env._current_behaviour == "approach":
-                action = 0
-            elif env._current_behaviour == "grasp":
-                action = 1
-            elif env._current_behaviour == "retract":
-                action = 2
+            
+            if board.is_castling(chessMove):
+                env.move_piece(move, castling=True,
+                               kingSideCastle=board.is_kingside_castling(chessMove))
             else:
+                env.move_piece(move, castling=False,
+                               kingSideCastle=board.is_kingside_castling(chessMove))
+            env.reset()
+            print("Chess Move", chessMove)
+            print("Origin", env._goal_object)
+            print("Destination", env._dest_object)
+            while not env.has_approached:
+                action = 0
+                env.step(action)
+            while not env.has_grasped:
+                action = 1
+                env.step(action)
+            while not env.has_retracted:
+                action = 2
+                env.step(action)
+            while not env.has_placed:
                 action = 3
-            env.step(action)
-            if env.has_placed:
-                env.reset()
-    # width, height, rgbImg, depthImg, segImg = env.p.getCameraImage(
-    #     width=1280,
-    #     height=1024,
-    #     viewMatrix=view_matrix,
-    #     projectionMatrix=projectionMatrix)
+                env.step(action)
 
+            # if env.has_placed:
+            #     env.reset()
+            board.push(chessMove)
+            scene.current_fen_string = scene._simplify_fen(board.fen())
+            print(board)
+            stockfish.set_fen_position(board.fen())
+            move = stockfish.get_best_move()
+            chessMove = chess.Move.from_uci(move)
+            print(board.fen())

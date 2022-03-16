@@ -28,6 +28,7 @@ class PickAndPlace(gym.Env):
         timestep=None,
         reactive_net=None,
         device=None,
+        isTraining=True
     ):
         """Initialises a PickAndPlace environment"""
 
@@ -58,6 +59,7 @@ class PickAndPlace(gym.Env):
         self.has_grasped = False
         self.has_retracted = False
         self.has_placed = False
+        self.isTraining = isTraining
         self.robot.resetBasePose(pos=[0, 0, 0.6])
         self._setup_observation_space()
         self.timestep = timestep
@@ -157,14 +159,9 @@ class PickAndPlace(gym.Env):
         Checks whether retract is successful and set corresponding variable
         """
         if not self.has_retracted:
-            # robot_pos, _ = self.robot.getPose()
             block_pos = self.robot.getGripperObs().copy()[:3]
             target_pos = self.scene.getDestTarget().copy()
-
             target_pos[2] = 0.7
-            #target_pos = self.obs[29:32]
-            # # Target for approach is 5cm above object
-            # block_pos[2] += 0.05
             self.has_retracted = (
                 np.linalg.norm(
                     target_pos - block_pos) <= self._approach_dist_threshold
@@ -185,21 +182,12 @@ class PickAndPlace(gym.Env):
         """
         if not self.has_placed:
             block_pos, _ = self.scene.getPose(self._goal_object)
-            robot_pos, _ = self.robot.getPose()
-            # final_target = self.obs[29:32].copy()
             final_target = self.scene.getDestTarget()
-            # hand_is_in_place = (
-            #     self._get_dist(robot_pos, final_target) <= self._place_dist_threshold
-            # )
-            # final_target[2] = 0.67
             block_is_in_place = (
                 self._get_dist(
                     block_pos, final_target) <= self._place_dist_threshold
             )
-            # if hand_is_in_place:
-            #print("PLACED FUNCTION",final_target, block_is_in_place)
             self.has_placed = block_is_in_place
-            # print(self.has_placed)
 
     def _get_obs(self):
         """Returns the observation from the environment"""
@@ -320,24 +308,25 @@ class PickAndPlace(gym.Env):
 
         self.scene.reset(random=True)
 
-        self.stockfish.set_fen_position(self.scene.current_fen_string)
-        fen = self.stockfish.get_fen_position()
-        print("fen", fen)
-        board = chess.Board(fen)
-        print(self.stockfish.get_board_visual())
+        if self.isTraining:
+            self.stockfish.set_fen_position(self.scene.current_fen_string)
+            fen = self.stockfish.get_fen_position()
+            print("fen", fen)
+            board = chess.Board(fen)
+            print(self.stockfish.get_board_visual())
 
-        move = self.stockfish.get_best_move()
-        chessMove = chess.Move.from_uci(move)
-        if board.is_castling(chessMove):
-            self.move_piece(move, castling=True,
-                            kingSideCastle=board.is_kingside_castling(chessMove))
-        else:
-            self.move_piece(move, castling=False,
-                            kingSideCastle=board.is_kingside_castling(chessMove))
+            move = self.stockfish.get_best_move()
+            chessMove = chess.Move.from_uci(move)
+            if board.is_castling(chessMove):
+                self.move_piece(move, castling=True,
+                                kingSideCastle=board.is_kingside_castling(chessMove))
+            else:
+                self.move_piece(move, castling=False,
+                                kingSideCastle=board.is_kingside_castling(chessMove))
 
-        print("Chess Move", chessMove)
-        print("Origin", self._goal_object)
-        print("Destination", self._dest_object)
+            print("Chess Move", chessMove)
+            print("Origin", self._goal_object)
+            print("Destination", self._dest_object)
         self.scene.setInit()
         self.scene.start()
         # After simulation starts do a dummy action to better initiliase
