@@ -47,11 +47,11 @@ class PickAndPlace(gym.Env):
         self._max_rot = max_arm_rot
         self._step = 0
         self._is_sparse = True
-        self._target_dist_threshold = 0.03
+        self._target_dist_threshold = 0.02
         if reactive_net is not None:
-            self._target_dist_threshold = 0.03
-        self._approach_dist_threshold = 0.03
-        self._place_dist_threshold = 0.03
+            self._target_dist_threshold = 0.02
+        self._approach_dist_threshold = 0.02
+        self._place_dist_threshold = 0.01
         self.reactive_net = reactive_net
         self.device = device
         self.has_approached = False
@@ -84,7 +84,7 @@ class PickAndPlace(gym.Env):
         self.obs = self._get_obs()
         return self.obs
 
-    def step(self, action):
+    def step(self, action, actionName):
         """
         Executes the action in the environment
         This method uses a step function that is defined in the script
@@ -95,7 +95,7 @@ class PickAndPlace(gym.Env):
         that make use of the reactive network as part of the environment.
         """
         self._step += 1
-        obs, reward, done, info = self.step_fn(self, action)
+        obs, reward, done, info = self.step_fn(self, action, actionName)
         return obs, reward, done, info
 
     def render(self, mode="rgbd_array"):
@@ -151,19 +151,38 @@ class PickAndPlace(gym.Env):
                 self._get_dist(
                     robot_pos, block_pos) <= self._approach_dist_threshold
             )
+            print("approach", self.has_approached)
 
     def retracted(self):
         """
         Checks whether retract is successful and set corresponding variable
         """
         if not self.has_retracted:
+            # robot_pos, _ = self.robot.getPose()
+            # robot_pos = self.robot.getGripperObs()[:3]
+            # target_pos = self.posDict[self._dest_object].pos.copy()
+            # target_pos[2] = 0.69
+            # self.has_retracted = self._get_dist(
+            #     robot_pos, target_pos) <= self._approach_dist_threshold
             block_pos = self.robot.getGripperObs().copy()[:3]
             target_pos = self.scene.getDestTarget().copy()
-            target_pos[2] = 0.7
+            target_pos[2] = 0.69
             self.has_retracted = (
                 np.linalg.norm(
                     target_pos - block_pos) <= self._approach_dist_threshold
             )
+            # block_pos, _ = self.scene.getPose(self._goal_object)
+            # target_pos = self.obs[29:32]
+            # target_pos[2] = 0.69
+            # # # Target for approach is 5cm above object
+            # # block_pos[2] += 0.05
+            # self.has_retracted = np.linalg.norm(
+            #     target_pos - block_pos) <= self._approach_dist_threshold
+            # print(self._get_dist(
+            #     robot_pos, target_pos))
+            # print(target_pos)
+            # print(self.has_retracted)
+            print("retract", self.has_retracted)
 
     def grasped(self):
         """
@@ -173,6 +192,7 @@ class PickAndPlace(gym.Env):
             self.has_grasped = (
                 self.scene.getNumFingerTipContacts(0, self._goal_object) == 3
             )
+            print("grasp", self.has_grasped)
 
     def placed(self):
         """
@@ -186,6 +206,7 @@ class PickAndPlace(gym.Env):
                     block_pos, final_target) <= self._place_dist_threshold
             )
             self.has_placed = block_is_in_place
+            print("placed", self.has_placed)
 
     def _get_obs(self):
         """Returns the observation from the environment"""
@@ -200,22 +221,28 @@ class PickAndPlace(gym.Env):
                 self._goal_object)
             relative_pos = block_pos - robot_obs[:3]
             gripper_state = 0
+            origin = self.scene.objects[self._goal_object].pos.copy()
+            destination = self.scene.objects[self._dest_object].pos.copy()
+            # print("ORIGINNNNNNNNNNNNNNNNNNNNNNNNNNN", origin)
+            # print("DESTINATIONNNNNNNNNNNNNNNNNNNNNN", destination)
+            # print("BLOCKKKKKKKKKKKKKKKKK POS", block_pos)
             if self.has_grasped:
                 gripper_state = 1
 
             obs = np.concatenate(
                 (
                     robot_obs,
-                    block_pos,
+                    origin,
                     block_orn,
                     block_lin_vel,
                     block_ang_vel,
                     relative_pos,
-                    self.scene.getTarget(),
-                    self.scene.getDestTarget(),
+                    # origin,
+                    destination,
                     [gripper_state],
                 )
             )
+            # print("ROBOT OBS in obs", obs[:3].copy())
             # print(obs)
             # print(robot_obs)
             # print(block_pos)
@@ -328,6 +355,7 @@ class PickAndPlace(gym.Env):
         self.scene.start()
         # After simulation starts do a dummy action to better initiliase
         print(self.scene.objects[self._goal_object].model)
+        print(self.scene.objects[self._dest_object].model)
         robPos, robOrn = self.robot.getPose()
         self.robot.applyPose(robPos, robOrn, relative=True)
         self.scene.step(30)

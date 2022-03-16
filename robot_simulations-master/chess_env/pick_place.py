@@ -14,7 +14,7 @@ import os
 
 class ChessSquare:
     def __init__(self, pos, model, name):
-        self.name = name 
+        self.name = name
         self.pos = pos
         self.model = model
 
@@ -97,6 +97,8 @@ class PickPlaceScene(scene.Scene):
 
         chessboardOrn = [0, 0, -1.56]
         chessboardOrn = self.p.getQuaternionFromEuler(chessboardOrn)
+
+        self.p.changeDynamics(self.chessboard[0], linkIndex=-1, mass=100.0)
         self.p.resetBasePositionAndOrientation(
             self.chessboard[0], [0.6, 0.0, 0.627], chessboardOrn
         )
@@ -113,7 +115,7 @@ class PickPlaceScene(scene.Scene):
                 col.append([0.835 - (j * 0.067), -0.23 + (i * 0.067), 0.625])
                 idx = chr(97+i) + str(1+j)
                 item = ChessSquare(
-                    pos = [0.835 - (j * 0.067), -0.23 + (i * 0.067), 0.625], model = None, name =idx)
+                    pos=[0.835 - (j * 0.067), -0.23 + (i * 0.067), 0.625], model=None, name=idx)
                 self.posDict[idx] = item
                 print(self.posDict[idx].pos, self.posDict[idx].name)
             self.positions.append(col)
@@ -162,55 +164,66 @@ class PickPlaceScene(scene.Scene):
                 for j in range(len(fen_rows[i])):
                     idx = chr(97+j) + str(8-i)
                     print("i", i)
-                    print("j",j)
+                    print("j", j)
                     print("idx", idx)
                     print("idx in that pos is", fen_rows[i][j])
                     print(fen_rows[i])
                     if fen_rows[i][j] == "P":
-                        self.new_method(globalOrn, whitePawn, idx,"pawn_white/model.sdf", "P")
-                        whitePawn +=1
+                        self.new_method(globalOrn, whitePawn,
+                                        idx, "pawn_white/model.sdf", "P")
+                        whitePawn += 1
                     if fen_rows[i][j] == "R":
-                        self.new_method(globalOrn, whiteRook,idx,"rook_white/model.sdf", "R")
-                        whiteRook+=1
+                        self.new_method(globalOrn, whiteRook,
+                                        idx, "rook_white/model.sdf", "R")
+                        whiteRook += 1
                     if fen_rows[i][j] == "N":
-                        self.new_method(globalOrn, whiteKnight, idx,"knight_white/model.sdf", "N")
-                        whiteKnight+=1
+                        self.new_method(globalOrn, whiteKnight,
+                                        idx, "knight_white/model.sdf", "N")
+                        whiteKnight += 1
                     if fen_rows[i][j] == "B":
-                        self.new_method(globalOrn, whiteBishop, idx,"bishop_white/model.sdf", "B")
-                        whiteBishop+=1
+                        self.new_method(globalOrn, whiteBishop,
+                                        idx, "bishop_white/model.sdf", "B")
+                        whiteBishop += 1
                     if fen_rows[i][j] == "Q":
-                        self.new_method(globalOrn, "", idx,"queen_white/model.sdf", "Q" )
+                        self.new_method(globalOrn, "", idx,
+                                        "queen_white/model.sdf", "Q")
                     if fen_rows[i][j] == "K":
-                        self.new_method(globalOrn, "",idx,"king_white/model.sdf", "K" )
+                        self.new_method(globalOrn, "", idx,
+                                        "king_white/model.sdf", "K")
                     if fen_rows[i][j] == "p":
-                        self.new_method(globalOrn, blackPawn, idx,"pawn_black/model.sdf", "p" )
-                        blackPawn+=1
+                        self.new_method(globalOrn, blackPawn,
+                                        idx, "pawn_black/model.sdf", "p")
+                        blackPawn += 1
                     if fen_rows[i][j] == "r":
-                        self.new_method(globalOrn, blackRook, idx,"rook_black/model.sdf", "r" )
-                        blackRook+=1
+                        self.new_method(globalOrn, blackRook,
+                                        idx, "rook_black/model.sdf", "r")
+                        blackRook += 1
                     if fen_rows[i][j] == "n":
-                        self.new_method(globalOrn, blackKnight, idx,"knight_black/model.sdf", "n" )
-                        blackKnight+=1
+                        self.new_method(globalOrn, blackKnight,
+                                        idx, "knight_black/model.sdf", "n")
+                        blackKnight += 1
                     if fen_rows[i][j] == "b":
-                        self.new_method(globalOrn, blackBishop, idx,"bishop_black/model.sdf", "b" )
-                        blackBishop+=1
+                        self.new_method(globalOrn, blackBishop,
+                                        idx, "bishop_black/model.sdf", "b")
+                        blackBishop += 1
                     if fen_rows[i][j] == "q":
-                        self.new_method(globalOrn, "", idx,"queen_black/model.sdf", "q" )
+                        self.new_method(globalOrn, "", idx,
+                                        "queen_black/model.sdf", "q")
 
                     if fen_rows[i][j] == "k":
-                        self.new_method(globalOrn, "", idx,"king_black/model.sdf", "k" )
+                        self.new_method(globalOrn, "", idx,
+                                        "king_black/model.sdf", "k")
 
     def new_method(self, globalOrn, item, idx, modelName, modelSymbol):
         path = os.path.join(
-                            self.objectModels, modelName)
+            self.objectModels, modelName)
         model = self.p.loadSDF(path)
         self.p.resetBasePositionAndOrientation(
-                            model[0], self.posDict[idx].pos, globalOrn
-                        )
+            model[0], self.posDict[idx].pos, globalOrn
+        )
         name = modelSymbol + str(item)
         self.pieceDict[name] = model
         self.posDict[idx].model = model
-                        
 
     def randomize_with_fen(self, start_fen_string):
         globalOrn = [0, 0, 0]
@@ -239,37 +252,37 @@ class PickPlaceScene(scene.Scene):
                 for j in range(len(fen_rows[i])):
                     idx = chr(97+j) + str(8-i)
                     if fen_rows[i][j] == "P":
-                        self.setupStuff(globalOrn, whitePawn, idx,"P")
-                        whitePawn +=1
+                        self.setupStuff(globalOrn, whitePawn, idx, "P")
+                        whitePawn += 1
                     if fen_rows[i][j] == "R":
-                        self.setupStuff(globalOrn, whiteRook, idx,"R")
-                        whiteRook +=1
+                        self.setupStuff(globalOrn, whiteRook, idx, "R")
+                        whiteRook += 1
                     if fen_rows[i][j] == "N":
-                        self.setupStuff(globalOrn, whiteKnight, idx,"N")
-                        whiteKnight +=1
+                        self.setupStuff(globalOrn, whiteKnight, idx, "N")
+                        whiteKnight += 1
                     if fen_rows[i][j] == "B":
-                        self.setupStuff(globalOrn, whiteBishop, idx,"B")
-                        whiteBishop +=1
+                        self.setupStuff(globalOrn, whiteBishop, idx, "B")
+                        whiteBishop += 1
                     if fen_rows[i][j] == "Q":
-                        self.setupStuff(globalOrn, "", idx,"Q")
+                        self.setupStuff(globalOrn, "", idx, "Q")
                     if fen_rows[i][j] == "K":
-                        self.setupStuff(globalOrn, "", idx,"K")
+                        self.setupStuff(globalOrn, "", idx, "K")
                     if fen_rows[i][j] == "p":
-                      self.setupStuff(globalOrn, blackPawn, idx,"p")
-                      blackPawn +=1
+                        self.setupStuff(globalOrn, blackPawn, idx, "p")
+                        blackPawn += 1
                     if fen_rows[i][j] == "r":
-                       self.setupStuff(globalOrn, blackRook, idx,"r")
-                       blackRook +=1
+                        self.setupStuff(globalOrn, blackRook, idx, "r")
+                        blackRook += 1
                     if fen_rows[i][j] == "n":
-                        self.setupStuff(globalOrn, blackKnight, idx,"n")
-                        blackKnight +=1
+                        self.setupStuff(globalOrn, blackKnight, idx, "n")
+                        blackKnight += 1
                     if fen_rows[i][j] == "b":
-                        self.setupStuff(globalOrn, blackBishop, idx,"b")
-                        blackBishop +=1
+                        self.setupStuff(globalOrn, blackBishop, idx, "b")
+                        blackBishop += 1
                     if fen_rows[i][j] == "q":
-                        self.setupStuff(globalOrn, "", idx,"q")
+                        self.setupStuff(globalOrn, "", idx, "q")
                     if fen_rows[i][j] == "k":
-                        self.setupStuff(globalOrn, "", idx,"k")
+                        self.setupStuff(globalOrn, "", idx, "k")
         print("board updated")
         self.objects = self.posDict
 
@@ -277,12 +290,11 @@ class PickPlaceScene(scene.Scene):
         name = string + str(item)
         model = self.pieceDict[name]
         self.p.resetBasePositionAndOrientation(
-                            model[0], self.posDict[idx].pos, globalOrn
-                        )
+            model[0], self.posDict[idx].pos, globalOrn
+        )
 
         self.posDict[idx].model = model
         # print("adding" + name + "to " + idx )
-    
 
     def _randomizePositionFromFen(self):
         lines = open('randomFen.txt').read().splitlines()
@@ -318,7 +330,7 @@ class PickPlaceScene(scene.Scene):
             fen = self.stockfish.get_fen_position()
             board = chess.Board(fen)
             if board.is_checkmate() or board.is_stalemate() or board.is_insufficient_material():
-                 self.current_fen_string = self._randomizePositionFromFen()
+                self.current_fen_string = self._randomizePositionFromFen()
             else:
                 isCheckMate = False
 

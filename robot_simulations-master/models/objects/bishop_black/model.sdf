@@ -27,13 +27,6 @@
             <scale>2 2 2</scale>
           </mesh>
         </geometry>
-        <material>
-          <lighting>1</lighting>
-          <ambient>0.62 0.31 0.12 1</ambient>
-          <diffuse>0.4 0.2 0.1 1</diffuse>
-          <specular>0.01 0.01 0.01 1</specular>
-          <emissive>0 0 0 1</emissive>
-        </material>
         <transparency>0</transparency>
         <cast_shadows>1</cast_shadows>
       </visual>

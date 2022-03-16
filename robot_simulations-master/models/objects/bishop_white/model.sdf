@@ -48,9 +48,6 @@
             </ode>
           </friction>
           <contact>
-            <collide_without_contact>0</collide_without_contact>
-            <collide_without_contact_bitmask>1</collide_without_contact_bitmask>
-            <collide_bitmask>1</collide_bitmask>
             <ode>
               <kp>1e+07</kp>
               <kd>1</kd>

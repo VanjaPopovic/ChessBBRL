@@ -309,14 +309,16 @@ def step_fn_rn_execute_single_action(env, action):
     return env.obs, reward, env._is_done(), env._get_info()
 
 
-def step_fn_low_level_behaviours(env, action):
+def step_fn_low_level_behaviours(env, action, actionName = "approach"):
     curr_pos, curr_orn = env.robot.getPose()
+    # print(action)
+    # print(actionName)
     behaviour_action = np.clip(action, -1, 1)
-    pos_actions = behaviour_action[:3] * env._max_move
-    # gripper_rot = None
-    # if action == 1:
-    #     gripper_rot = behaviour_action[3]
 
+    if(actionName in ["approach", "retract"]):
+        pos_actions = behaviour_action[:3] * env._max_move
+    else:
+        pos_actions = behaviour_action[:3] * 0.02
     goal_pos = np.add(curr_pos, pos_actions)
     goal_orn = curr_orn
     # if gripper_rot is not None:
@@ -327,9 +329,9 @@ def step_fn_low_level_behaviours(env, action):
     poses = t.interpolate(curr_pos, curr_orn, goal_pos, goal_orn, 2)
 
     # Step through poses
-    for i in range(2):
+    for pose in poses:
         # Calculate IK solution
-        env.robot.applyPose(poses[i][0], poses[i][1], relative=True)
+        env.robot.applyPose(*pose, relative=True)
 
         # Step through scene 1/8 of a second
         env.scene.step(30, env.timestep)
