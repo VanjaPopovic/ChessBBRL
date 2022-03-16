@@ -9,11 +9,13 @@ def step_fn_trained_rn(env, action):
     if env._current_behaviour == "approach":
         while not env.has_approached and env._step < env.max_steps:
             env.reactive_net(
-                torch.from_numpy(env.obs).type(torch.FloatTensor).to(env.device)
+                torch.from_numpy(env.obs).type(
+                    torch.FloatTensor).to(env.device)
             )
             behaviour_action = env.reactive_net.get_behaviour_output(action)
             curr_pos, curr_orn = env.robot.getPose()
-            behaviour_action = np.clip(behaviour_action.cpu().detach().numpy(), -1, 1)
+            behaviour_action = np.clip(
+                behaviour_action.cpu().detach().numpy(), -1, 1)
             pos_actions = behaviour_action[:3] * env._max_move
 
             goal_pos = np.add(curr_pos, pos_actions)
@@ -46,11 +48,13 @@ def step_fn_trained_rn(env, action):
     elif env._current_behaviour == "grasp":
         while np.linalg.norm(env.obs[26:29]) > 0.01 and env._step < env.max_steps:
             env.reactive_net(
-                torch.from_numpy(env.obs).type(torch.FloatTensor).to(env.device)
+                torch.from_numpy(env.obs).type(
+                    torch.FloatTensor).to(env.device)
             )
             behaviour_action = env.reactive_net.get_behaviour_output(action)
             curr_pos, curr_orn = env.robot.getPose()
-            behaviour_action = np.clip(behaviour_action.cpu().detach().numpy(), -1, 1)
+            behaviour_action = np.clip(
+                behaviour_action.cpu().detach().numpy(), -1, 1)
             pos_actions = behaviour_action[:3] * env._max_move
 
             goal_pos = np.add(curr_pos, pos_actions)
@@ -87,11 +91,13 @@ def step_fn_trained_rn(env, action):
     elif env._current_behaviour == "retract":
         while not env._is_success() and env._step < env.max_steps:
             env.reactive_net(
-                torch.from_numpy(env.obs).type(torch.FloatTensor).to(env.device)
+                torch.from_numpy(env.obs).type(
+                    torch.FloatTensor).to(env.device)
             )
             behaviour_action = env.reactive_net.get_behaviour_output(action)
             curr_pos, curr_orn = env.robot.getPose()
-            behaviour_action = np.clip(behaviour_action.cpu().detach().numpy(), -1, 1)
+            behaviour_action = np.clip(
+                behaviour_action.cpu().detach().numpy(), -1, 1)
             pos_actions = behaviour_action[:3] * env._max_move
 
             goal_pos = np.add(curr_pos, pos_actions)
@@ -216,7 +222,7 @@ def step_fn_expert_behaviours(env, action):
         env.robot.applyPose(goalPos, robOrn)
         env.scene.step(50)
     elif action == 3 and env.has_retracted:
-         # Grasp
+        # Grasp
         print("Placing")
         robPos, robOrn = env.robot.getPose()
         blockPos = env.scene.getTarget()
@@ -264,7 +270,8 @@ def step_fn_rn_execute_single_action(env, action):
     else:
         reward = -1
 
-    env.reactive_net(torch.from_numpy(env.obs).type(torch.FloatTensor).to(env.device))
+    env.reactive_net(torch.from_numpy(env.obs).type(
+        torch.FloatTensor).to(env.device))
     behaviour_action = env.reactive_net.get_behaviour_output(action)
     curr_pos, curr_orn = env.robot.getPose()
     behaviour_action = np.clip(behaviour_action.cpu().detach().numpy(), -1, 1)
@@ -309,13 +316,12 @@ def step_fn_rn_execute_single_action(env, action):
     return env.obs, reward, env._is_done(), env._get_info()
 
 
-def step_fn_low_level_behaviours(env, action, actionName = "approach"):
+def step_fn_low_level_behaviours(env, action, actionName="approach"):
     curr_pos, curr_orn = env.robot.getPose()
-    # print(action)
-    # print(actionName)
+
     behaviour_action = np.clip(action, -1, 1)
 
-    if(actionName in ["approach", "retract"]):
+    if(actionName in ["approach", "retract", "place"]):
         pos_actions = behaviour_action[:3] * env._max_move
     else:
         pos_actions = behaviour_action[:3] * 0.02
@@ -334,18 +340,22 @@ def step_fn_low_level_behaviours(env, action, actionName = "approach"):
         env.robot.applyPose(*pose, relative=True)
 
         # Step through scene 1/8 of a second
-        env.scene.step(30, env.timestep)
+        env.scene.step(20)
 
     # Step through scene for 1/12 of a second to reach final pose
     env.scene.step(20)
     env.obs = env._get_obs()
 
     env.approached()
-    if env.has_approached:
-        env.grasped()
-    if env.has_grasped:
-        env.retracted()
-    if env.has_retracted:
-        env.placed()
+    env.grasped()
+    env.retracted()
+    env.placed()
+    
+    #     if env.has_approached:
+        
+    # if env.has_grasped:
+        
+    # if env.has_retracted:
+        
 
     return env.obs, env._get_reward(), env._is_done(), env._get_info()

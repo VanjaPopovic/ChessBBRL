@@ -14,7 +14,7 @@ import chess
 from torch.utils.tensorboard import SummaryWriter
 
 BEHAVIOUR_EPISODES = {"approach": 2500, "grasp": 2000,
-                      "retract": 3000, "choreograph": 3500, "place": 2000}
+                      "retract": 3000, "choreograph": 3500, "place": 2000, "poilato": 100}
 
 
 if __name__ == "__main__":
@@ -134,17 +134,7 @@ if __name__ == "__main__":
 
         # Approach solution here is the object relative position measured with (object_pos - arm_pos)
         object_rel_pos_arm = obs[26:29].copy()
-        object_rel_pos_arm[2] += 0.05
-
-  
-
-
-        # myVal2 = obs[13:16].copy()
-        # myVal2[2] += 0.05
-        # myNewVal = myVal2 - obs[:3].copy()
-
-        # print(myNewVal)
-        # print(object_rel_pos_arm)
+        object_rel_pos_arm[2] += 0.02
         while np.linalg.norm(object_rel_pos_arm) > 0.02 and timestep <= env.max_steps:
             model_input = torch.from_numpy(obs).type(
                 torch.FloatTensor).to(device)
@@ -172,9 +162,8 @@ if __name__ == "__main__":
                     [expected[0].item(), expected[1].item(), expected[2].item(), 0, -1])
             obs, reward, done, info = env.step(action, "approach")
             object_rel_pos_arm = obs[26:29].copy()
-            object_rel_pos_arm[2] += 0.05
+            object_rel_pos_arm[2] += 0.02
             timestep += 1
-            # print("aa")
 
         # If only training approach continue from here.
         if args.command == "approach":
@@ -210,23 +199,13 @@ if __name__ == "__main__":
         else:
             action_out = 1
 
-        value = obs[29:32].copy()
-        value[2] += 0.02
-        object_rel_pos_arm  = value - obs[:3]
+        # value = obs[13:16].copy()
+        # value[2] += 0.01
+        # object_rel_pos_arm = value - obs[:3].copy()
+        object_rel_pos_arm = obs[26:29].copy()
+        object_rel_pos_arm[2] += 0.01
+        while np.linalg.norm(object_rel_pos_arm) > 0.01  and timestep <= env.max_steps:
 
-        # print(newShit)
-        
-        object_rel_pos_arm_old = obs[26:29].copy()
-
-        object_rel_pos_arm_old[2] += 0.02
-
-        print("obj", object_rel_pos_arm, "ooooooooold", object_rel_pos_arm_old)
-        # newShit = object_rel_pos_arm
-        # print(object_rel_pos_arm)
-        # print("ROBOT OBS", obs[:3].copy())
-
-        while np.linalg.norm(object_rel_pos_arm) > 0.01 and timestep <= env.max_steps:
-            
             model_input = torch.from_numpy(obs).type(
                 torch.FloatTensor).to(device)
             behaviour_net(model_input)
@@ -254,17 +233,9 @@ if __name__ == "__main__":
                 else:
                     action = expected_np
             obs, reward, done, info = env.step(action, "grasp")
-            value = obs[29:32].copy()
-            value[2] += 0.02
-            object_rel_pos_arm  = value - obs[:3]
 
-            # print(newShit)
-            
-            object_rel_pos_arm_old = obs[26:29].copy()
-
-            object_rel_pos_arm_old[2] += 0.02
-
-            print("obj", object_rel_pos_arm, "ooooooooold", object_rel_pos_arm_old)
+            object_rel_pos_arm = obs[26:29].copy()
+            object_rel_pos_arm[2] += 0.01
             timestep += 1
 
             # print("grasping")
@@ -308,13 +279,10 @@ if __name__ == "__main__":
         else:
             action_out = 2
 
-        tar = obs[32:35].copy()
+        tar = obs[29:32].copy()
         tar[2] = 0.69
         object_rel_pos_target = tar - obs[0:3].copy()
         while np.linalg.norm(object_rel_pos_target) > 0.02 and timestep <= env.max_steps:
-            # print("huhu")
-            # print(object_rel_pos_target)
-            # print(tar)
             model_input = torch.from_numpy(obs).type(
                 torch.FloatTensor).to(device)
             behaviour_net(model_input)
@@ -339,7 +307,7 @@ if __name__ == "__main__":
                 action = np.array(
                     [expected[0].item(), expected[1].item(), expected[2].item(), 0, -1])
             obs, reward, done, info = env.step(action, "retract")
-            tar = obs[32:35].copy()
+            tar = obs[29:32].copy()
             tar[2] = 0.69
             object_rel_pos_target = tar - obs[0:3].copy()
             timestep += 1
@@ -355,6 +323,8 @@ if __name__ == "__main__":
                 print("Success")
             continue
 
+
+        obs = env._get_obs()
         if args.command == "choreograph":
             if timestep < env.max_steps:
                 rewards.append(torch.tensor([1.0]).to(device))
@@ -379,18 +349,18 @@ if __name__ == "__main__":
             action_out = 3
 
         # replace this with Final action?
-
-        tar = obs[32:35].copy()
-        tar[2] += 0.02
-        object_rel_pos_target = tar - obs[0:3]
-        while np.linalg.norm(object_rel_pos_target) > 0.02 and timestep <= env.max_steps and env.has_retracted:
+        tar = obs[29:32].copy()
+        tar[2] = 0.635
+        print(tar)
+        finalAction = tar - obs[:3]
+        print("Final Action",finalAction)
+        while np.linalg.norm(finalAction) > 0.01 and timestep <= env.max_steps :
             model_input = torch.from_numpy(obs).type(
                 torch.FloatTensor).to(device)
             behaviour_net(model_input)
             behaviour_action = behaviour_net.get_behaviour_output(action_out)
-            expected_np = np.array(
-                [object_rel_pos_target[0], object_rel_pos_target[1], object_rel_pos_target[2], 0, -1])
-            expected = torch.from_numpy(expected_np).type(torch.FloatTensor)
+            expected = torch.from_numpy(finalAction).type(torch.FloatTensor)
+            # expected = torch.from_numpy(expected_np).type(torch.FloatTensor)
 
             if args.command == "place":
                 error = torch.zeros(3, dtype=torch.float32).to(device)
@@ -398,21 +368,22 @@ if __name__ == "__main__":
                 for j in range(3):
                     error[j] = behaviour_net_criterion(
                         behaviour_action[j], expected[j])
-                loss = torch.sum(error[:3]).type(torch.FloatTensor).to(device)
+                loss = torch.sum(error).type(torch.FloatTensor).to(device)
                 loss.backward()
                 writer.add_scalar("loss", loss.cpu().detach().item(), i)
                 optimizer.step()
 
             if args.command in ["choreograph", "place"]:
-                if action_out == 3:
                     action = np.array([behaviour_action[0].item(
                     ), behaviour_action[1].item(), behaviour_action[2].item(), 0, -1])
-                else:
-                    action = expected_np
+            else:
+                action = np.array([expected[0].item(), expected[1].item(), expected[2].item(), 0, -1])
             obs, reward, done, info = env.step(action, "place")
-            tar = obs[32:35].copy()
-            tar[2] += 0.02
-            object_rel_pos_target = tar - obs[0:3]
+            tar = obs[29:32].copy()
+            tar[2] = 0.635
+            # print(tar)
+            finalAction = tar - obs[:3]
+            # print("LINALG",np.linalg.norm(finalAction))
             timestep += 1
 
         obs = env._get_obs()

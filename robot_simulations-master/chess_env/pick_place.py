@@ -157,6 +157,8 @@ class PickPlaceScene(scene.Scene):
         blackKnight = 0
         whiteBishop = 0
         blackBishop = 0
+        whiteQueen = 0
+        blackQueen = 0
         for i in range(len(fen_rows)):
             if fen_rows[i] == "8":
                 continue
@@ -185,8 +187,9 @@ class PickPlaceScene(scene.Scene):
                                         idx, "bishop_white/model.sdf", "B")
                         whiteBishop += 1
                     if fen_rows[i][j] == "Q":
-                        self.new_method(globalOrn, "", idx,
+                        self.new_method(globalOrn, whiteQueen, idx,
                                         "queen_white/model.sdf", "Q")
+                        whiteQueen += 1
                     if fen_rows[i][j] == "K":
                         self.new_method(globalOrn, "", idx,
                                         "king_white/model.sdf", "K")
@@ -207,12 +210,25 @@ class PickPlaceScene(scene.Scene):
                                         idx, "bishop_black/model.sdf", "b")
                         blackBishop += 1
                     if fen_rows[i][j] == "q":
-                        self.new_method(globalOrn, "", idx,
+                        self.new_method(globalOrn, blackQueen, idx,
                                         "queen_black/model.sdf", "q")
-
+                        blackQueen += 1
                     if fen_rows[i][j] == "k":
                         self.new_method(globalOrn, "", idx,
                                         "king_black/model.sdf", "k")
+        self.add_extra(globalOrn, 2, "bishop_black/model.sdf", "b")
+        self.add_extra(globalOrn, 2, "bishop_white/model.sdf", "B")
+        self.add_extra(globalOrn, 2, "rook_black/model.sdf", "r")
+        self.add_extra(globalOrn, 2, "rook_white/model.sdf", "R")
+        self.add_extra(globalOrn, 2, "knight_black/model.sdf", "n")
+        self.add_extra(globalOrn, 2, "knight_white/model.sdf", "N")
+        self.add_extra(globalOrn, 1, "queen_white/model.sdf", "Q")
+        self.add_extra(globalOrn, 1, "queen_black/model.sdf", "q")
+        self.add_extra(globalOrn, 2, "queen_white/model.sdf", "Q")
+        self.add_extra(globalOrn, 2, "queen_black/model.sdf", "q")
+
+
+        
 
     def new_method(self, globalOrn, item, idx, modelName, modelSymbol):
         path = os.path.join(
@@ -224,6 +240,16 @@ class PickPlaceScene(scene.Scene):
         name = modelSymbol + str(item)
         self.pieceDict[name] = model
         self.posDict[idx].model = model
+
+    def add_extra(self, globalOrn, item, modelName, modelSymbol):
+        path = os.path.join(
+            self.objectModels, modelName)
+        model = self.p.loadSDF(path)
+        self.p.resetBasePositionAndOrientation(
+            model[0], [0,0,0], globalOrn
+        )
+        name = modelSymbol + str(item)
+        self.pieceDict[name] = model
 
     def randomize_with_fen(self, start_fen_string):
         globalOrn = [0, 0, 0]
@@ -238,6 +264,8 @@ class PickPlaceScene(scene.Scene):
         blackKnight = 0
         whiteBishop = 0
         blackBishop = 0
+        whiteQueen = 0
+        blackQueen = 0
         for key, value in self.pieceDict.items():
             self.p.resetBasePositionAndOrientation(
                 value[0], [0, 0, 0], globalOrn
@@ -264,7 +292,8 @@ class PickPlaceScene(scene.Scene):
                         self.setupStuff(globalOrn, whiteBishop, idx, "B")
                         whiteBishop += 1
                     if fen_rows[i][j] == "Q":
-                        self.setupStuff(globalOrn, "", idx, "Q")
+                        self.setupStuff(globalOrn, whiteQueen, idx, "Q")
+                        whiteQueen +=1
                     if fen_rows[i][j] == "K":
                         self.setupStuff(globalOrn, "", idx, "K")
                     if fen_rows[i][j] == "p":
@@ -280,7 +309,8 @@ class PickPlaceScene(scene.Scene):
                         self.setupStuff(globalOrn, blackBishop, idx, "b")
                         blackBishop += 1
                     if fen_rows[i][j] == "q":
-                        self.setupStuff(globalOrn, "", idx, "q")
+                        self.setupStuff(globalOrn, blackQueen, idx, "q")
+                        blackQueen +=1
                     if fen_rows[i][j] == "k":
                         self.setupStuff(globalOrn, "", idx, "k")
         print("board updated")
