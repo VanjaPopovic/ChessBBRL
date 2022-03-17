@@ -193,7 +193,7 @@ class PickAndPlace(gym.Env):
                self._get_dist(
                     final_target, block_pos) <= self._place_dist_threshold
             )
-            print("placed", self.has_placed)
+            # print("placed", self.has_placed)
 
     def _get_obs(self):
         """Returns the observation from the environment"""
